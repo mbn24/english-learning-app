@@ -1,4 +1,7 @@
 // script.js
+if (typeof lessonsData === 'undefined'){
+    console.error("lessons.js لم يتم تحميله بشكل صحيح");}
+    else {console.log("تم تحميل lessons.js بنجاح");}
 
 // دوال مساعدة للتخزين المحلي
 function getUsers() {
@@ -56,16 +59,22 @@ window.logout = function() {
 
 // حفظ المجال المختار
 window.saveField = function(fieldKey) {
+    console.log("تم الضغط على المجال :" + fieldKey);
     let email = localStorage.getItem("currentUser");
-    if (!email) return;
+    if (!email) {alert("الرجاء تسجيل الدخول اولا");
+         return;}
     let users = getUsers();
     if (users[email]) {
         users[email].field = fieldKey;
         saveUsers(users);
+        let fieldName = lessonsData[fieldKey] ? lessonsData[fieldKey].name : fieldKey
         document.getElementById("fieldMsg").innerText = "✅ تم حفظ مجالك: " + lessonsData[fieldKey].name;
         // عرض الدروس بعد اختيار المجال
-        showLessons(fieldKey);
-    }
+        showLessons(fieldKey);}
+        else {
+            alert("حدث خطأ في بيانات المستخدم");
+        }
+
 };
 
 // عرض الدروس الخاصة بالمجال
