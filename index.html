@@ -4,182 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EnglishMaster - تعلم الإنجليزية حسب مجالك</title>
-    <!-- Tailwind CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Supabase JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .card { transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-        .auth-container { background: white; border-radius: 20px; padding: 30px; max-width: 400px; margin: 0 auto; }
-        input { border: 1px solid #ddd; border-radius: 10px; padding: 10px; width: 100%; margin-bottom: 15px; }
-        .btn { background: #667eea; color: white; padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; margin: 5px; }
-        .btn-secondary { background: #764ba2; }
-        .error { color: red; font-size: 14px; margin-top: 5px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="font-sans">
-    <div class="container mx-auto px-4 py-8">
-        <!-- قسم المحتوى الرئيسي (بعد تسجيل الدخول) -->
-        <div id="mainContent" style="display: none;">
-            <div class="text-center mb-8">
-                <h1 class="text-5xl font-bold text-white mb-4">✨ EnglishMaster ✨</h1>
-                <p class="text-xl text-white opacity-90">مرحباً بك، <span id="userEmail"></span> 🎉</p>
-                <button onclick="logout()" class="btn bg-red-500 mt-3">تسجيل خروج</button>
-            </div>
-            <div class="max-w-4xl mx-auto">
-                <h2 class="text-2xl font-semibold text-white text-center mb-8">اختر مجالك لتبدأ الرحلة</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="card bg-white rounded-xl p-6 text-center" onclick="saveField('developer')">
-                        <div class="text-5xl mb-3">💻</div>
-                        <h3 class="text-xl font-bold text-gray-800">مطور برمجيات</h3>
-                        <p class="text-gray-600 mt-2 text-sm">مصطلحات البرمجة، اجتماعات العمل، كتابة الوثائق</p>
-                    </div>
-                    <div class="card bg-white rounded-xl p-6 text-center" onclick="saveField('medical')">
-                        <div class="text-5xl mb-3">🩺</div>
-                        <h3 class="text-xl font-bold text-gray-800">طالب طب</h3>
-                        <p class="text-gray-600 mt-2 text-sm">مصطلحات طبية، تواصل مع المرضى، أبحاث طبية</p>
-                    </div>
-                    <div class="card bg-white rounded-xl p-6 text-center" onclick="saveField('law')">
-                        <div class="text-5xl mb-3">⚖️</div>
-                        <h3 class="text-xl font-bold text-gray-800">طالب قانون</h3>
-                        <p class="text-gray-600 mt-2 text-sm">مصطلحات قانونية، مرافعات، عقود</p>
-                    </div>
-                    <div class="card bg-white rounded-xl p-6 text-center" onclick="saveField('school')">
-                        <div class="text-5xl mb-3">📚</div>
-                        <h3 class="text-xl font-bold text-gray-800">تلميذ</h3>
-                        <p class="text-gray-600 mt-2 text-sm">قواعد أساسية، مفردات مدرسية، تحضير للامتحانات</p>
-                    </div>
-                    <div class="card bg-white rounded-xl p-6 text-center" onclick="saveField('business')">
-                        <div class="text-5xl mb-3">💼</div>
-                        <h3 class="text-xl font-bold text-gray-800">رجل أعمال</h3>
-                        <p class="text-gray-600 mt-2 text-sm">مفاوضات، عروض تقديمية، مراسلات رسمية</p>
-                    </div>
-                    <div class="card bg-white rounded-xl p-6 text-center" onclick="saveField('general')">
-                        <div class="text-5xl mb-3">🌍</div>
-                        <h3 class="text-xl font-bold text-gray-800">عام (للسفر والحياة اليومية)</h3>
-                        <p class="text-gray-600 mt-2 text-sm">محادثات يومية، سفر، تعارف</p>
-                    </div>
-                </div>
-                <div id="fieldMessage" class="text-center text-white mt-4"></div>
-            </div>
+<body>
+    <div class="container" id="app">
+        <h2>✨ EnglishMaster ✨</h2>
+        
+        <!-- قسم تسجيل الدخول وإنشاء حساب -->
+        <div id="auth">
+            <input type="email" id="email" placeholder="البريد الإلكتروني">
+            <input type="password" id="password" placeholder="كلمة المرور">
+            <button onclick="register()">إنشاء حساب</button>
+            <button onclick="login()">تسجيل الدخول</button>
+            <p id="msg" class="error"></p>
         </div>
-
-        <!-- قسم تسجيل الدخول / إنشاء حساب -->
-        <div id="authContainer" class="auth-container">
-            <h2 class="text-2xl font-bold text-center mb-4">مرحباً بك في EnglishMaster</h2>
-            <div id="authMode">
-                <div id="loginForm">
-                    <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
-                    <input type="password" id="loginPassword" placeholder="كلمة المرور">
-                    <button onclick="login()" class="btn w-full">تسجيل الدخول</button>
-                    <p class="text-center mt-3">ليس لديك حساب؟ <button onclick="showSignup()" class="text-blue-600">إنشاء حساب جديد</button></p>
-                </div>
-                <div id="signupForm" style="display: none;">
-                    <input type="email" id="signupEmail" placeholder="البريد الإلكتروني">
-                    <input type="password" id="signupPassword" placeholder="كلمة المرور">
-                    <button onclick="signup()" class="btn w-full">إنشاء حساب</button>
-                    <p class="text-center mt-3">لديك حساب؟ <button onclick="showLogin()" class="text-blue-600">تسجيل الدخول</button></p>
-                </div>
+        
+        <!-- قسم الملف الشخصي (يظهر بعد تسجيل الدخول) -->
+        <div id="profile" style="display:none;">
+            <p>مرحباً <span id="userEmail"></span> 🎉</p>
+            <button onclick="logout()">تسجيل خروج</button>
+            <h3>اختر مجالك:</h3>
+            <div id="fields">
+                <div class="card" onclick="saveField('مطور')">💻 مطور برمجيات</div>
+                <div class="card" onclick="saveField('طب')">🩺 طالب طب</div>
+                <div class="card" onclick="saveField('قانون')">⚖️ طالب قانون</div>
+                <div class="card" onclick="saveField('تلميذ')">📚 تلميذ</div>
+                <div class="card" onclick="saveField('أعمال')">💼 رجل أعمال</div>
+                <div class="card" onclick="saveField('عام')">🌍 عام</div>
             </div>
-            <div id="authError" class="error text-center mt-2"></div>
+            <p id="fieldMsg"></p>
         </div>
     </div>
 
-    <script>
-        // ⚠️ أدخل بيانات Supabase الخاصة بك هنا (من Project Settings -> API)
-        const SUPABASE_URL = "https://xxxxx.supabase.co";      // غيّرها إلى رابط مشروعك
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIs...";   // غيّرها إلى المفتاح العام
-
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        let currentUser = null;
-
-        window.onload = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                currentUser = user;
-                showMainContent();
-            } else {
-                document.getElementById("authContainer").style.display = "block";
-                document.getElementById("mainContent").style.display = "none";
-            }
-        };
-
-        window.login = async function() {
-            const email = document.getElementById("loginEmail").value;
-            const password = document.getElementById("loginPassword").value;
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                document.getElementById("authError").innerText = error.message;
-            } else {
-                currentUser = data.user;
-                showMainContent();
-            }
-        };
-
-        window.signup = async function() {
-            const email = document.getElementById("signupEmail").value;
-            const password = document.getElementById("signupPassword").value;
-            const { data, error } = await supabase.auth.signUp({ email, password });
-            if (error) {
-                document.getElementById("authError").innerText = error.message;
-            } else {
-                if (data.user) {
-                    await supabase.from("profiles").insert([{ id: data.user.id, email: email, field: null }]);
-                }
-                alert("تم إنشاء الحساب بنجاح! سجل الدخول الآن.");
-                showLogin();
-            }
-        };
-
-        window.logout = async function() {
-            await supabase.auth.signOut();
-            currentUser = null;
-            document.getElementById("authContainer").style.display = "block";
-            document.getElementById("mainContent").style.display = "none";
-            document.getElementById("authError").innerText = "";
-        };
-
-        window.saveField = async function(field) {
-            if (!currentUser) return;
-            const { error } = await supabase.from("profiles").update({ field: field }).eq("id", currentUser.id);
-            if (error) {
-                document.getElementById("fieldMessage").innerText = "حدث خطأ: " + error.message;
-            } else {
-                document.getElementById("fieldMessage").innerText = "✅ تم حفظ مجالك: " + getFieldName(field);
-            }
-        };
-
-        function getFieldName(field) {
-            const names = { developer: "مطور برمجيات", medical: "طالب طب", law: "طالب قانون", school: "تلميذ", business: "رجل أعمال", general: "عام" };
-            return names[field] || field;
-        }
-
-        function showMainContent() {
-            document.getElementById("authContainer").style.display = "none";
-            document.getElementById("mainContent").style.display = "block";
-            document.getElementById("userEmail").innerText = currentUser.email;
-            loadUserField();
-        }
-
-        async function loadUserField() {
-            const { data, error } = await supabase.from("profiles").select("field").eq("id", currentUser.id).single();
-            if (!error && data && data.field) {
-                document.getElementById("fieldMessage").innerText = "📌 مجالك الحالي: " + getFieldName(data.field);
-            }
-        }
-
-        window.showSignup = function() {
-            document.getElementById("loginForm").style.display = "none";
-            document.getElementById("signupForm").style.display = "block";
-            document.getElementById("authError").innerText = "";
-        };
-        window.showLogin = function() {
-            document.getElementById("loginForm").style.display = "block";
-            document.getElementById("signupForm").style.display = "none";
-            document.getElementById("authError").innerText = "";
-        };
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
