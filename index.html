@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>EnglishMaster</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        .card {
+            background: white;
+            display: inline-block;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .card:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <h1 style="color:white">✨ EnglishMaster ✨</h1>
+    <p style="color:white">اختر مجالك:</p>
+    <div>
+        <div class="card" onclick="alert('مطور برمجيات')">💻 مطور</div>
+        <div class="card" onclick="alert('طالب طب')">🩺 طب</div>
+        <div class="card" onclick="alert('طالب قانون')">⚖️ قانون</div>
+        <div class="card" onclick="alert('تلميذ')">📚 تلميذ</div>
+        <div class="card" onclick="alert('رجل أعمال')">💼 أعمال</div>
+        <div class="card" onclick="alert('عام')">🌍 عام</div>
+    </div>
+</body>
+</html>
