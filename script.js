@@ -1,4 +1,6 @@
-// دوال مساعدة للتخزين المحلي (localStorage)
+// script.js
+
+// دوال مساعدة للتخزين المحلي
 function getUsers() {
     let users = localStorage.getItem("users");
     return users ? JSON.parse(users) : {};
@@ -13,19 +15,16 @@ window.register = function() {
     let email = document.getElementById("email").value;
     let password = document.getElementById("password").value;
     let msg = document.getElementById("msg");
-    
     if (!email || !password) {
         msg.innerText = "البريد وكلمة المرور مطلوبة";
         return;
     }
-    
     let users = getUsers();
     if (users[email]) {
         msg.innerText = "البريد موجود بالفعل";
         return;
     }
-    
-    users[email] = { password: password, field: null };
+    users[email] = { password: password, field: null, progress: {} };
     saveUsers(users);
     msg.innerText = "تم إنشاء الحساب! سجل الدخول الآن.";
 };
@@ -36,7 +35,6 @@ window.login = function() {
     let password = document.getElementById("password").value;
     let users = getUsers();
     let msg = document.getElementById("msg");
-    
     if (users[email] && users[email].password === password) {
         localStorage.setItem("currentUser", email);
         showProfile(email);
@@ -50,21 +48,92 @@ window.logout = function() {
     localStorage.removeItem("currentUser");
     document.getElementById("auth").style.display = "block";
     document.getElementById("profile").style.display = "none";
+    document.getElementById("lessonsPanel").style.display = "none";
     document.getElementById("email").value = "";
     document.getElementById("password").value = "";
     document.getElementById("msg").innerText = "";
 };
 
 // حفظ المجال المختار
-window.saveField = function(field) {
+window.saveField = function(fieldKey) {
     let email = localStorage.getItem("currentUser");
     if (!email) return;
-    
     let users = getUsers();
     if (users[email]) {
-        users[email].field = field;
+        users[email].field = fieldKey;
         saveUsers(users);
-        document.getElementById("fieldMsg").innerText = "✅ تم حفظ مجالك: " + field;
+        document.getElementById("fieldMsg").innerText = "✅ تم حفظ مجالك: " + lessonsData[fieldKey].name;
+        // عرض الدروس بعد اختيار المجال
+        showLessons(fieldKey);
+    }
+};
+
+// عرض الدروس الخاصة بالمجال
+function showLessons(fieldKey) {
+    let email = localStorage.getItem("currentUser");
+    let users = getUsers();
+    let progress = users[email]?.progress || {};
+    let fieldData = lessonsData[fieldKey];
+    if (!fieldData) return;
+
+    let lessonsHtml = `<h3>📘 دروس ${fieldData.name}</h3><ul>`;
+    fieldData.lessons.forEach(lesson => {
+        let isCompleted = progress[lesson.id] || false;
+        let status = isCompleted ? "✅" : "❌";
+        lessonsHtml += `
+            <li>
+                <strong>${lesson.title}</strong> ${status}
+                <button onclick="viewLesson('${fieldKey}', ${lesson.id})">عرض الدرس</button>
+            </li>
+        `;
+    });
+    lessonsHtml += `</ul><button onclick="backToProfile()">🔙 العودة إلى اختيار المجال</button>`;
+    
+    document.getElementById("lessonsContent").innerHTML = lessonsHtml;
+    document.getElementById("profile").style.display = "none";
+    document.getElementById("lessonsPanel").style.display = "block";
+}
+
+// عرض محتوى درس محدد
+window.viewLesson = function(fieldKey, lessonId) {
+    let fieldData = lessonsData[fieldKey];
+    let lesson = fieldData.lessons.find(l => l.id === lessonId);
+    if (!lesson) return;
+    let email = localStorage.getItem("currentUser");
+    let users = getUsers();
+    let isCompleted = users[email]?.progress?.[lessonId] || false;
+    
+    let lessonHtml = `
+        <h3>📖 ${lesson.title}</h3>
+        <p>${lesson.content}</p>
+        ${!isCompleted ? '<button onclick="markComplete(\'' + fieldKey + '\', ' + lessonId + ')">✔️ إنهاء الدرس</button>' : '<p>✅ لقد أنهيت هذا الدرس مسبقاً.</p>'}
+        <button onclick="showLessons('${fieldKey}')">🔙 العودة إلى قائمة الدروس</button>
+    `;
+    document.getElementById("lessonsContent").innerHTML = lessonHtml;
+};
+
+// وضع علامة "تم" على الدرس
+window.markComplete = function(fieldKey, lessonId) {
+    let email = localStorage.getItem("currentUser");
+    let users = getUsers();
+    if (!users[email].progress) users[email].progress = {};
+    users[email].progress[lessonId] = true;
+    saveUsers(users);
+    showLessons(fieldKey);
+};
+
+// العودة إلى شاشة اختيار المجال
+window.backToProfile = function() {
+    let email = localStorage.getItem("currentUser");
+    document.getElementById("lessonsPanel").style.display = "none";
+    document.getElementById("profile").style.display = "block";
+    // تحديث الرسالة
+    let users = getUsers();
+    let field = users[email]?.field;
+    if (field) {
+        document.getElementById("fieldMsg").innerText = "📌 مجالك الحالي: " + lessonsData[field].name;
+    } else {
+        document.getElementById("fieldMsg").innerText = "لم تختر مجالاً بعد. اختر مجالك من الأعلى.";
     }
 };
 
@@ -72,24 +141,24 @@ window.saveField = function(field) {
 function showProfile(email) {
     document.getElementById("auth").style.display = "none";
     document.getElementById("profile").style.display = "block";
+    document.getElementById("lessonsPanel").style.display = "none";
     document.getElementById("userEmail").innerText = email;
-    
     let users = getUsers();
-    let field = users[email] ? users[email].field : null;
+    let field = users[email]?.field;
     let fieldMsg = document.getElementById("fieldMsg");
-    
-    if (field) {
-        fieldMsg.innerText = "📌 مجالك الحالي: " + field;
+    if (field && lessonsData[field]) {
+        fieldMsg.innerText = "📌 مجالك الحالي: " + lessonsData[field].name;
     } else {
         fieldMsg.innerText = "لم تختر مجالاً بعد. اختر مجالك من الأعلى.";
     }
 }
 
-// التحقق من وجود مستخدم مسجل عند تحميل الصفحة
+// التحقق من وجود مستخدم مسجل عند التحميل
 let currentUser = localStorage.getItem("currentUser");
 if (currentUser && getUsers()[currentUser]) {
     showProfile(currentUser);
 } else {
     document.getElementById("auth").style.display = "block";
     document.getElementById("profile").style.display = "none";
+    document.getElementById("lessonsPanel").style.display = "none";
 }
